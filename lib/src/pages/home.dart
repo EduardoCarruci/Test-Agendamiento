@@ -14,8 +14,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
-
     ScreenUtil.init(context, width: 750, height: 1334, allowFontScaling: true);
     return Scaffold(
       backgroundColor: MaterialColors.colorbackground,

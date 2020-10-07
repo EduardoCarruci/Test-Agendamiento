@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 class ProviderInfo with ChangeNotifier {
-  DateTime _seleccionado;
+  String _seleccionado = "";
 
   get seleccionado {
     return _seleccionado;
   }
 
-  set seleccionado(DateTime item) {
+  set seleccionado(String item) {
     this._seleccionado = item;
 
     notifyListeners();

@@ -22,7 +22,7 @@ class ReservasPage extends StatefulWidget {
 class _ReservasPageState extends State<ReservasPage> {
   Cancha items = new Cancha();
   WeatherController service = new WeatherController();
-  String cancha = "Juancin Football";
+  //String cancha = "Juancin Football";
   TextEditingController controllername = new TextEditingController();
   final format = DateFormat("yyyy-MM-dd");
   DateTime selectedDate = DateTime.now();
@@ -35,16 +35,22 @@ class _ReservasPageState extends State<ReservasPage> {
 
   @override
   Widget build(BuildContext context) {
-    final providerInfo = Provider.of<ProviderInfo>(context);
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
-
+    final providerInfo = Provider.of<ProviderInfo>(context);
     return Scaffold(
       backgroundColor: MaterialColors.colorbackground,
-      appBar: CustomBar(
-        title: "Agregar reserva",
-        appBar: AppBar(),
-        function: addElement,
+      appBar: AppBar(
+        title: Text("Agregar reserva"),
+        centerTitle: true,
+        backgroundColor: MaterialColors.colorappBar,
+        actions: [
+          IconButton(
+              icon: Icon(Icons.add),
+              onPressed: () {
+                addElement(providerInfo.seleccionado);
+              })
+        ],
       ),
       body: Container(
           height: height,
@@ -88,18 +94,18 @@ class _ReservasPageState extends State<ReservasPage> {
                         Spacer(),
                         MaterialButton(
                             onPressed: () async {
-                              providerInfo.seleccionado = await Utils()
-                                  .pickDate(context, selectedDate,
-                                      "Dia del Servicio");
-                              if (providerInfo.seleccionado == null) {
-                                providerInfo.seleccionado = DateTime.now();
-                              }
+                              selectedDate = await Utils().pickDate(
+                                  context, selectedDate, "Dia del Servicio");
+                              if (selectedDate == null) {
+                                selectedDate = DateTime.now();
+                              } else
+                                setState(() {});
                             },
-                            child: providerInfo.seleccionado == null
+                            child: selectedDate == null
                                 ? Text("Introduce fecha")
                                 : containerRow(
                                     " " +
-                                        "${providerInfo.seleccionado}"
+                                        "${selectedDate.toLocal()}"
                                             .split(' ')[0],
                                     Icons.calendar_today)),
                       ],
@@ -125,7 +131,7 @@ class _ReservasPageState extends State<ReservasPage> {
                               itemHeight: 55,
                               underline: Container(),
                               hint: (Text(
-                                "     " + cancha,
+                                "     " + providerInfo.seleccionado,
                               )),
                               items:
                                   items.creacionCanchas().map((Cancha value) {
@@ -139,16 +145,14 @@ class _ReservasPageState extends State<ReservasPage> {
                                 );
                               }).toList(),
                               onChanged: (Cancha value) {
-                                cancha = value.nombre;
-
-                                setState(() {});
+                                providerInfo.seleccionado = value.nombre;
                               },
                             ),
                           ),
                         )
                       ],
                     ),
-                    _serviceContainer(providerInfo.seleccionado),
+                    _serviceContainer(),
                   ],
                 ),
               ),
@@ -157,12 +161,13 @@ class _ReservasPageState extends State<ReservasPage> {
     );
   }
 
-  Widget _serviceContainer(DateTime fecha) {
+  Widget _serviceContainer() {
     return FutureBuilder<Weather>(
         future: service.getElements(
-            format.format(DateTime.parse(fecha.toString())),
-            format.format(DateTime.parse(
-                DateTime(fecha.year, fecha.month, fecha.day + 1).toString()))),
+            format.format(DateTime.parse(selectedDate.toString())),
+            format.format(DateTime.parse(DateTime(
+                    selectedDate.year, selectedDate.month, selectedDate.day + 1)
+                .toString()))),
         builder: (BuildContext context, AsyncSnapshot<Weather> snapshot) {
           if (!snapshot.hasData)
             return Center(child: CircularProgressIndicator());
@@ -243,15 +248,15 @@ class _ReservasPageState extends State<ReservasPage> {
     );
   }
 
-  void addElement() async {
+  void addElement(String nombrecancha) async {
     if (_formKey.currentState.validate()) {
-      if (await ClientDatabaseProvider.db.getValueElements(
-          cancha, format.format(DateTime.parse(selectedDate.toString())))) {
+      if (await ClientDatabaseProvider.db.getValueElements(nombrecancha,
+          format.format(DateTime.parse(selectedDate.toString())))) {
         Agendamiento item = new Agendamiento();
-        item.nombrecancha = cancha;
+        item.nombrecancha = nombrecancha;
         item.nombrepersona = controllername.text;
         item.fecha = format.format(DateTime.parse(selectedDate.toString()));
-        ClientDatabaseProvider.db.addElement(item);
+        await ClientDatabaseProvider.db.addElement(item);
         Navigator.pushReplacementNamed(context, "/");
       } else {}
 
