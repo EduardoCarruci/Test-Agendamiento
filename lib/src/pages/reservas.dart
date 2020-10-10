@@ -175,12 +175,17 @@ class _ReservasPageState extends State<ReservasPage> {
               return Center(child: CircularProgressIndicator());
               break;
             case ConnectionState.active:
-              return _buildListView(snapshot.data);
               break;
             case ConnectionState.done:
+              if (snapshot.data == null) {
+                 return Text("Intenta con otra fecha",style: TextStyle(
+                        color: MaterialColors.colorappBar
+                      ));
+              } else
+                return _buildListView(snapshot.data);
               break;
           }
-          //mi personal widget
+        
         });
   }
 
