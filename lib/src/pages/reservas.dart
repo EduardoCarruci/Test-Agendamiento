@@ -164,10 +164,22 @@ class _ReservasPageState extends State<ReservasPage> {
             format.format(DateTime.parse(DateTime(
                     selectedDate.year, selectedDate.month, selectedDate.day + 1)
                 .toString()))),
+        // ignore: missing_return
         builder: (BuildContext context, AsyncSnapshot<Weather> snapshot) {
-          if (!snapshot.hasData)
-            return Center(child: CircularProgressIndicator());
-          return _buildListView(snapshot.data);
+          switch (snapshot.connectionState) {
+            case ConnectionState.none:
+              return Text("Ocurrio algun error",
+                  style: TextStyle(color: Colors.white));
+              break;
+            case ConnectionState.waiting:
+              return Center(child: CircularProgressIndicator());
+              break;
+            case ConnectionState.active:
+              return _buildListView(snapshot.data);
+              break;
+            case ConnectionState.done:
+              break;
+          }
           //mi personal widget
         });
   }
@@ -245,7 +257,7 @@ class _ReservasPageState extends State<ReservasPage> {
   }
 
   void addElement(String nombrecancha) async {
-    if (_formKey.currentState.validate() && nombrecancha!="") {
+    if (_formKey.currentState.validate() && nombrecancha != "") {
       if (await ClientDatabaseProvider.db.getValueElements(nombrecancha,
           format.format(DateTime.parse(selectedDate.toString())))) {
         Agendamiento item = new Agendamiento();
@@ -255,8 +267,10 @@ class _ReservasPageState extends State<ReservasPage> {
         await ClientDatabaseProvider.db.addElement(item);
         Navigator.pushNamed(context, "/");
       } else {
-         toast?.show("Los cupos para este día ya fueron tomados\nselecciona otro día", MaterialColors.colorappBar,
-          Colors.white);
+        toast?.show(
+            "Los cupos para este día ya fueron tomados\nselecciona otro día",
+            MaterialColors.colorappBar,
+            Colors.white);
       }
 
       //
