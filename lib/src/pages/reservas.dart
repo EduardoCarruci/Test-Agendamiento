@@ -6,8 +6,8 @@ import 'package:agendamiento_canchas/src/models/weather.dart';
 import 'package:agendamiento_canchas/src/utils/colors.dart';
 import 'package:agendamiento_canchas/src/utils/provider.dart';
 import 'package:agendamiento_canchas/src/utils/utils.dart';
-import 'package:agendamiento_canchas/src/widgets/appbar.dart';
 import 'package:agendamiento_canchas/src/widgets/textfield.dart';
+import 'package:agendamiento_canchas/src/widgets/toast.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -20,6 +20,7 @@ class ReservasPage extends StatefulWidget {
 }
 
 class _ReservasPageState extends State<ReservasPage> {
+  MsgToast toast = new MsgToast();
   Cancha items = new Cancha();
   WeatherController service = new WeatherController();
   //String cancha = "Juancin Football";
@@ -27,11 +28,6 @@ class _ReservasPageState extends State<ReservasPage> {
   final format = DateFormat("yyyy-MM-dd");
   DateTime selectedDate = DateTime.now();
   final _formKey = GlobalKey<FormState>();
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -249,7 +245,7 @@ class _ReservasPageState extends State<ReservasPage> {
   }
 
   void addElement(String nombrecancha) async {
-    if (_formKey.currentState.validate()) {
+    if (_formKey.currentState.validate() && nombrecancha!="") {
       if (await ClientDatabaseProvider.db.getValueElements(nombrecancha,
           format.format(DateTime.parse(selectedDate.toString())))) {
         Agendamiento item = new Agendamiento();
@@ -257,12 +253,18 @@ class _ReservasPageState extends State<ReservasPage> {
         item.nombrepersona = controllername.text;
         item.fecha = format.format(DateTime.parse(selectedDate.toString()));
         await ClientDatabaseProvider.db.addElement(item);
-        Navigator.pushReplacementNamed(context, "/");
-      } else {}
+        Navigator.pushNamed(context, "/");
+      } else {
+         toast?.show("Los cupos para este día ya fueron tomados\nselecciona otro día", MaterialColors.colorappBar,
+          Colors.white);
+      }
 
       //
 
-    } else {}
+    } else {
+      toast?.show("Completa todos los campos", MaterialColors.colorappBar,
+          Colors.white);
+    }
   }
 /* 
   */

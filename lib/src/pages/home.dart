@@ -131,6 +131,6 @@ class _HomePageState extends State<HomePage> {
       );
 
   void backPress() {
-    Navigator.pushReplacementNamed(context, "reserva");
+    Navigator.pushNamed(context, "reserva");
   }
 }
